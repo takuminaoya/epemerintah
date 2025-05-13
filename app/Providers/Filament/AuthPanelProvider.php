@@ -26,9 +26,20 @@ class AuthPanelProvider extends PanelProvider
             ->default()
             ->id('auth')
             ->path('auth')
+            ->brandName('Electronik Pemerintah')
             ->login()
+            ->registration()
+            ->profile()
+            ->sidebarCollapsibleOnDesktop()
+            ->databaseNotifications()
+            ->favicon(asset('images/logo.png'))
+            ->spa()
             ->colors([
                 'primary' => Color::Amber,
+            ])
+            ->maxContentWidth('full')
+            ->plugins([
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
