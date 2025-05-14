@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Base\MasterForm;
 use App\Filament\Imports\GolonganDarahImporter;
 use Filament\Forms;
 use Filament\Tables;
@@ -29,23 +30,13 @@ class GolonganDarahResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\TextInput::make('nama')
-                    ->required()
-            ]);
+            ->schema(MasterForm::basic_form());
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('nama')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat pada')
-                    ->since()
-                    ->dateTimeTooltip()
-            ])
+            ->columns(MasterForm::basic_column())
             ->headerActions([
                 ImportAction::make('import gol darah')
                     ->importer(GolonganDarahImporter::class)

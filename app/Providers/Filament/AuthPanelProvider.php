@@ -20,6 +20,8 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AuthPanelProvider extends PanelProvider
 {
+    protected static ?int $navigationSort = 3;
+
     public function panel(Panel $panel): Panel
     {
         return $panel

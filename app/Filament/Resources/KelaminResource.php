@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Base\MasterForm;
 use App\Filament\Resources\KelaminResource\Pages;
 use App\Filament\Resources\KelaminResource\RelationManagers;
 use App\Models\Kelamin;
@@ -27,23 +28,13 @@ class KelaminResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\TextInput::make('nama')
-                    ->required()
-            ]);
+            ->schema(MasterForm::basic_form());
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('nama')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat pada')
-                    ->since()
-                    ->dateTimeTooltip()
-            ])
+            ->columns(MasterForm::basic_column())
             ->filters([
                 //
             ])

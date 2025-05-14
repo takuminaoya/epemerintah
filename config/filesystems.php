@@ -60,6 +60,15 @@ return [
             'report' => false,
         ],
 
+        'ungasan' => [
+            'driver' => 'local',
+            'root' => public_path(),
+            'url' => public_path(),
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
     ],
 
     /*

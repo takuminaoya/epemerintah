@@ -4,28 +4,27 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\Agama;
 use App\Base\MasterForm;
+use App\Filament\Imports\AgamaImporter;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use App\Models\PosisiKeluarga;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Imports\PosisiKeluargaImporter;
+use App\Filament\Resources\AgamaResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\PosisiKeluargaResource\Pages;
-use App\Filament\Resources\PosisiKeluargaResource\RelationManagers;
+use App\Filament\Resources\AgamaResource\RelationManagers;
 
-class PosisiKeluargaResource extends Resource
+class AgamaResource extends Resource
 {
-    protected static ?string $model = PosisiKeluarga::class;
-
-    protected static ?string $modelLabel = 'posisi dalam keluarga';
-    protected static ?string $pluralModelLabel = 'posisi dalam keluarga';
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+    protected static ?string $modelLabel = 'Agama';
+    protected static ?string $pluralModelLabel = 'Agama';
     protected static ?string $navigationGroup = 'Master';
+
+    protected static ?string $model = Agama::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-home';
 
     public static function form(Form $form): Form
     {
@@ -37,12 +36,12 @@ class PosisiKeluargaResource extends Resource
     {
         return $table
             ->columns(MasterForm::basic_column())
-            ->headerActions([
-                ImportAction::make('import posisi')
-                    ->importer(PosisiKeluargaImporter::class)
-            ])
             ->filters([
                 //
+            ])
+            ->headerActions([
+                ImportAction::make('import Agama')
+                    ->importer(AgamaImporter::class)
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -55,19 +54,10 @@ class PosisiKeluargaResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPosisiKeluargas::route('/'),
-            'create' => Pages\CreatePosisiKeluarga::route('/create'),
-            'edit' => Pages\EditPosisiKeluarga::route('/{record}/edit'),
+            'index' => Pages\ManageAgamas::route('/'),
         ];
     }
 }

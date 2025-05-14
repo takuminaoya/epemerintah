@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Base\MasterForm;
 use App\Filament\Imports\PendidikanImporter;
 use Filament\Forms;
 use Filament\Tables;
@@ -29,23 +30,13 @@ class PendidikanResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\TextInput::make('nama')
-                    ->required()
-            ]);
+            ->schema(MasterForm::basic_form());
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('nama')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat Pada')
-                    ->since()
-                    ->dateTimeTooltip(),
-            ])
+            ->columns(MasterForm::basic_column())
             ->headerActions([
                 ImportAction::make('import pendidikan')
                     ->importer(PendidikanImporter::class)
