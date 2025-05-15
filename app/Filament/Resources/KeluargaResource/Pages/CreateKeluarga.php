@@ -177,7 +177,45 @@ class CreateKeluarga extends CreateRecord
                                         ->label('Posisi Dalam Keluarga')
                                         ->relationship('posisi_keluarga', 'nama')
                                         ->required()
-                                ]),
+                        ]),
+                    Section::make('Informasi Kewarganegaraan')
+                        ->columns([
+                            'sm' => 2,
+                            'xl' => 2,
+                        ])
+                        ->collapsible()
+                        ->description('Detail pribadi dari orang tua penduduk seperti nama alamat tgl lahir dll.')
+                        ->schema([
+                            Select::make('kewarganegaraan')
+                                ->required()
+                                ->options([
+                                    'WNI' => 'Warga Negara Indonesia',
+                                    'WNA' => 'Warga Negara Asing'
+                                ])
+                                ->reactive()
+                                ->default('WNI'),
+                            TextInput::make('negara')
+                                ->disabled(
+                                    fn($get) => $get('kewarganegaraan') === 'WNI'
+                                )
+                                ->reactive()
+                                ->required()
+                                ->default('Indonesia'),
+                            TextInput::make('no_kitap')
+                                ->visible(
+                                    fn($get) => $get('kewarganegaraan') === 'WNA'
+                                )
+                                ->reactive()
+                                ->required()
+                                ->maxLength(16),
+                            TextInput::make('no_paspor')
+                                ->visible(
+                                    fn($get) => $get('kewarganegaraan') === 'WNA'
+                                )
+                                ->reactive()
+                                ->required()
+                                ->maxLength(255),
+                        ]),
                             Section::make('Informasi Orang Tua')
                                 ->columns([
                                     'sm' => 2,

@@ -16,13 +16,15 @@ class KeluargaImporter extends Importer
     {
         return [
             ImportColumn::make('uuid')
-                ->label('UUID')
+                ->label('penduduk_id')
                 ->requiredMapping()
                 ->rules(['required', 'max:36']),
             ImportColumn::make('nomor')
+                ->label('kk')
                 ->requiredMapping()
                 ->rules(['required', 'max:16']),
             ImportColumn::make('nama_dusun')
+                ->label('dusun')
                 ->requiredMapping()
                 ->rules(['required', 'max:255']),
             ImportColumn::make('alamat')
@@ -39,7 +41,7 @@ class KeluargaImporter extends Importer
 
         return Keluarga::create([
             "uuid" => $this->data['uuid'],
-            "nomor" => $this->data['nomor'],
+            "nomor" => str_replace("'", "", $this->data['nomor']),
             "nama_dusun" => $this->data['nama_dusun'],
             "alamat" => $this->data['alamat'],
             "dusun_id" => Dusun::where('nama', $this->data['nama_dusun'])->value('id'),

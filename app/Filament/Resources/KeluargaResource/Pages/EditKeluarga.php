@@ -2,20 +2,21 @@
 
 namespace App\Filament\Resources\KeluargaResource\Pages;
 
+use Closure;
+use Filament\Actions;
+use App\Models\Penduduk;
 use Illuminate\Support\Str;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Resources\Pages\EditRecord;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Wizard\Step;
 use App\Filament\Resources\KeluargaResource;
-use App\Models\Penduduk;
-use Filament\Actions;
 use Filament\Forms\Components\Actions\Action;
-use Filament\Resources\Pages\EditRecord;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 
 class EditKeluarga extends EditRecord
@@ -195,28 +196,66 @@ class EditKeluarga extends EditRecord
                                         ->relationship('posisi_keluarga', 'nama')
                                         ->required()
                                 ]),
-                            Section::make('Informasi Orang Tua')
-                                ->columns([
-                                    'sm' => 2,
-                                    'xl' => 2,
+                    Section::make('Informasi Kewarganegaraan')
+                        ->columns([
+                            'sm' => 2,
+                            'xl' => 2,
+                        ])
+                        ->collapsible()
+                        ->description('Detail pribadi dari orang tua penduduk seperti nama alamat tgl lahir dll.')
+                        ->schema([
+                            Select::make('kewarganegaraan')
+                                ->required()
+                                ->options([
+                                    'WNI' => 'Warga Negara Indonesia',
+                                    'WNA' => 'Warga Negara Asing'
                                 ])
-                                ->collapsible()
-                                ->description('Detail pribadi dari orang tua penduduk seperti nama alamat tgl lahir dll.')
-                                ->schema([
-                                    TextInput::make('nik_ayah')
-                                        ->required()
-                                        ->maxLength(16),
-                                    TextInput::make('nama_ayah')
-                                        ->required()
-                                        ->maxLength(255),
-                                    TextInput::make('nik_ibu')
-                                        ->required()
-                                        ->live()
-                                        ->maxLength(16),
-                                    TextInput::make('nama_ibu')
-                                        ->required()
-                                        ->maxLength(255),
-                                ])
+                                ->reactive()
+                                ->default('WNI'),
+                            TextInput::make('negara')
+                                ->disabled(
+                                    fn($get) => $get('kewarganegaraan') === 'WNI'
+                                )
+                                ->reactive()
+                                ->required()
+                                ->default('Indonesia'),
+                            TextInput::make('no_kitap')
+                                ->visible(
+                                    fn($get) => $get('kewarganegaraan') === 'WNA'
+                                )
+                                ->reactive()
+                                ->required()
+                                ->maxLength(16),
+                            TextInput::make('no_paspor')
+                                ->visible(
+                                    fn($get) => $get('kewarganegaraan') === 'WNA'
+                                )
+                                ->reactive()
+                                ->required()
+                                ->maxLength(255),
+                        ]),
+                    Section::make('Informasi Orang Tua')
+                        ->columns([
+                            'sm' => 2,
+                            'xl' => 2,
+                        ])
+                        ->collapsible()
+                        ->description('Detail pribadi dari orang tua penduduk seperti nama alamat tgl lahir dll.')
+                        ->schema([
+                            TextInput::make('nik_ayah')
+                                ->required()
+                                ->maxLength(16),
+                            TextInput::make('nama_ayah')
+                                ->required()
+                                ->maxLength(255),
+                            TextInput::make('nik_ibu')
+                                ->required()
+                                ->live()
+                                ->maxLength(16),
+                            TextInput::make('nama_ibu')
+                                ->required()
+                                ->maxLength(255),
+                        ])
                         ])
                         ->itemLabel(fn(array $state): ?string => $state['nama'] ?? null),
                 ]),
