@@ -10,6 +10,6 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-.fi-main {
-    background-color: red;
+.fi-in-text-item {
+    text-transform: capitalize !important;
 }

@@ -10,8 +10,10 @@
         "bezhansalleh/filament-shield": "^3.3",
         "filament/filament": "3.3",
         "filament/notifications": "3.3",
+        "joshembling/image-optimizer": "^1.6",
         "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1"
+        "laravel/tinker": "^2.10.1",
+        "secondnetwork/blade-tabler-icons": "^3.31"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

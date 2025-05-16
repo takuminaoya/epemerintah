@@ -25,4 +25,24 @@ class Keluarga extends Model
     {
         return $this->belongsTo(Dusun::class);
     }
+
+    public function pindahs(): HasMany
+    {
+        return $this->hasMany(MutasiPindah::class, 'keluarga_id');
+    }
+
+    public function matis(): HasMany
+    {
+        return $this->hasMany(MutasiKematian::class, 'keluarga_id');
+    }
+
+    public function lahirs(): HasMany
+    {
+        return $this->hasMany(MutasiLahir::class, 'keluarga_id');
+    }
+
+    public function pindah_anggotas(): HasMany
+    {
+        return $this->hasMany(MutasiPindahPenduduk::class, 'keluarga_id');
+    }
 }

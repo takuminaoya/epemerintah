@@ -10,13 +10,17 @@ use App\Models\Penduduk;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use App\Models\MutasiPindah;
+use App\Models\MutasiKematian;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Resources\Components\Tab;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Actions\ImportAction;
@@ -29,6 +33,7 @@ use Filament\Tables\Actions\BulkActionGroup;
 use App\Filament\Resources\PendudukResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\PendudukResource\RelationManagers;
+use App\Filament\Resources\PendudukResource\Widgets\AktifOverview;
 
 class PendudukResource extends Resource
 {
@@ -187,7 +192,6 @@ class PendudukResource extends Resource
                     ])
             ]);
     }
-
     public static function table(Table $table): Table
     {
         return $table
@@ -209,6 +213,7 @@ class PendudukResource extends Resource
                         'tidak aktif' => 'danger',
                         'pindah' => 'warning',
                         'meninggal' => 'danger',
+                        'lahir' => 'primary',
                     }),
                 Tables\Columns\TextColumn::make('alamat')
                     ->toggleable(isToggledHiddenByDefault: true)
@@ -216,12 +221,7 @@ class PendudukResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('posisi_keluarga')
-                    ->relationship('posisi_keluarga', 'nama'),
-                SelectFilter::make('status')
-                    ->options([
-                        'aktif' => 'Masih Aktif',
-                        'tidak aktif' => 'Sudah Tidak Aktif',
-                    ])
+                    ->relationship('posisi_keluarga', 'nama')
             ])
             ->headerActions([
                 ImportAction::make('import Penduduk')
@@ -240,51 +240,46 @@ class PendudukResource extends Resource
                     ->steps([
                         Step::make('Detail Informasi Kematian')
                             ->schema([
-                                Placeholder::make('Daftar Penduduk Yang Pindah')
-                                    ->columnSpanFull()
-                                    ->content(
-                                        function ($livewire): string {
-                                            $knamas = [];
-                                            foreach ($livewire->getSelectedTableRecords() as $rcd) {
-                                                $knamas[] = $rcd->nama;
-                                            }
-
-                                            return implode(' , ', $knamas);
-                                        }
-                                    ),
-                                DatePicker::make('tanggal_pengajuan')
-                                    ->readOnly()
-                                    ->default(date('Y-m-d')),
-                                DatePicker::make('pindah_pada')
+                                DatePicker::make('meninggal_pada')
                                     ->required(),
-                                TextInput::make('kk_tujuan')
-                                    ->exists('keluargas', 'nomor')
+                                TextInput::make('tempat_meninggal')
                                     ->required(),
-                                Select::make('dusun_tujuan')
-                                    ->options(Dusun::all()->pluck('nama', 'id'))
-                                    ->searchable()
-                                    ->preload(),
-                                Textarea::make('alamat_pindah')
-                                    ->columnSpanFull()
+                                TextInput::make('penyebab_kematian')
                                     ->required(),
-                                Textarea::make('alasan_pindah')
-                                    ->columnSpanFull()
-                                    ->required()
                             ])
                             ->columns(2),
                         Step::make('File-File Pendukung')
                             ->schema([
                                 FileUpload::make('foto_kk')
+                                    ->image()
+                                    ->optimize('webp')
                                     ->imageEditor(),
                                 FileUpload::make('foto_ktp')
+                                    ->image()
+                                    ->optimize('webp')
                                     ->imageEditor(),
                                 FileUpload::make('surat_keterangan_dokter')
+                                    ->image()
+                                    ->optimize('webp')
                                     ->imageEditor()
                             ]),
                     ])
                     ->action(
-                        function ($records, array $data): void {
-                            dd($data['alasan']);
+                        function ($record, array $data): void {
+                            // save mutasi
+                            $data['penduduk_id'] = $record->id;
+                            $data['keluarga_id'] = $record->keluarga_id;
+
+                            MutasiKematian::create($data);
+
+                            // update penduduk
+                            $record->status = "meninggal";
+                            $record->save();
+                            // notifikasi
+                            Notification::make()
+                                ->title('Saved successfully')
+                                ->success()
+                                ->send();
                         }
                     )
                     ->slideOver(),
@@ -312,16 +307,13 @@ class PendudukResource extends Resource
 
                                                 return implode(' , ', $knamas);
                                             }
-                                        ),
-                                    DatePicker::make('tanggal_pengajuan')
-                                        ->readOnly()
-                                        ->default(date('Y-m-d')),
-                                    DatePicker::make('pindah_pada')
+                            ),
+                                    DatePicker::make('tanggal_pindah')
                                         ->required(),
                                     TextInput::make('kk_tujuan')
                                         ->exists('keluargas', 'nomor')
                                         ->required(),
-                                    Select::make('dusun_tujuan')
+                                    Select::make('dusun_id')
                                         ->options(Dusun::all()->pluck('nama', 'id'))
                                         ->searchable()
                                         ->preload(),
@@ -339,15 +331,36 @@ class PendudukResource extends Resource
                                         ->imageEditor()
                                 ]),
                         ])
-                        ->action(
-                            function ($records, array $data): void {
-                                dd($data['alasan']);
+                    ->action(
+                        function ($records, array $data): void {
+                            $data['keluarga_id'] = Keluarga::where('nomor', $data['kk_tujuan'])->value('id');
+                            unset($data['kk_tujuan']);
+
+                            $pindah = MutasiPindah::create($data);
+                            $cms = [];
+                            foreach ($records as $r) {
+                                $cms[] = [
+                                    'keluarga_sebelumnya' => $r->keluarga->id,
+                                    'keluarga_id' => $data['keluarga_id'],
+                                    'penduduk_id' => $r->id,
+                                    'mutasi_pindah_id' => $pindah->id
+                                ];
+
+                                $r->keluarga_id = $data['keluarga_id'];
+                                $r->save();
                             }
-                        )->slideOver(),
+
+                            $pindah->penduduks()->createMany($cms);
+
+                            Notification::make()
+                                ->title('Saved successfully')
+                                ->success()
+                                ->send();
+                        }
+                    )->slideOver(),
                     BulkAction::make('Pindah Keluar Desa'),
-                ])
-                    ->label('Mutasi')
-                    ->icon('heroicon-o-document')
+            ])->label('Mutasi')
+                ->icon('heroicon-o-document')
             ]);
     }
 
@@ -370,6 +383,13 @@ class PendudukResource extends Resource
             'create' => Pages\CreatePenduduk::route('/create'),
             'view' => Pages\ViewPenduduk::route('/{record}'),
             'edit' => Pages\EditPenduduk::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            AktifOverview::class,
         ];
     }
 }

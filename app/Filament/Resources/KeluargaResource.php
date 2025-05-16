@@ -24,6 +24,9 @@ use App\Filament\Resources\KeluargaResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\KeluargaResource\RelationManagers;
 use App\Filament\Resources\KeluargaResource\RelationManagers\AnggotasRelationManager;
+use App\Filament\Resources\KeluargaResource\RelationManagers\LahirsRelationManager;
+use App\Filament\Resources\KeluargaResource\RelationManagers\MatisRelationManager;
+use App\Filament\Resources\KeluargaResource\RelationManagers\PindahsRelationManager;
 
 class KeluargaResource extends Resource
 {
@@ -89,7 +92,7 @@ class KeluargaResource extends Resource
             ->schema([
                 Section::make('Detail Keluarga')
                     ->description('Detail keluarga secara singkat merujuk pada informasi dasar mengenai anggota dan struktur suatu keluarga.')
-                    ->icon('heroicon-m-users')
+                    ->icon('tabler-brand-weibo-f')
                     ->collapsible()
                     ->persistCollapsed()
                     ->columns(4)
@@ -97,10 +100,14 @@ class KeluargaResource extends Resource
                         TextEntry::make('nomor')
                             ->label('Nomor Kartu Keluarga')
                             ->columnSpanFull(),
-                        TextEntry::make('provinsi'),
-                        TextEntry::make('kabupaten'),
-                        TextEntry::make('kecamatan'),
-                        TextEntry::make('kelurahan'),
+                        TextEntry::make('provinsi')
+                            ->formatStateUsing(fn (string $state): string => ucwords($state)),
+                        TextEntry::make('kabupaten')
+                            ->formatStateUsing(fn (string $state): string => ucwords($state)),
+                        TextEntry::make('kecamatan')
+                            ->formatStateUsing(fn (string $state): string => ucwords($state)),
+                        TextEntry::make('kelurahan')
+                            ->formatStateUsing(fn (string $state): string => ucwords($state)),
                         TextEntry::make('kode_pos'),
                         TextEntry::make('dusun.nama'),
                         TextEntry::make('status')
@@ -124,6 +131,9 @@ class KeluargaResource extends Resource
     {
         return [
             AnggotasRelationManager::class,
+            PindahsRelationManager::class,
+            MatisRelationManager::class,
+            LahirsRelationManager::class,
         ];
     }
 

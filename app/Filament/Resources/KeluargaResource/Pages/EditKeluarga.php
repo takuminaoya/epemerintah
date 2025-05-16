@@ -263,6 +263,7 @@ class EditKeluarga extends EditRecord
                 ->schema([
                     FileUpload::make('foto_kk')
                         ->image()
+                        ->optimize('webp')
                         ->imageEditor()
                 ])
         ];
